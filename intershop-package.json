@@ -1,10 +1,14 @@
 {
   "intershop-package-version": "1.0.0",
   "files": {
-    "ipc.sql":            "rebuild",
+    "000-first.sql":      "rebuild",
+    "080-intertext.sql":  "rebuild",
+    "100-harfbuzz.sql":   "rebuild",
     "lib/main.js":        "app",
     "src/main.coffee":    "ignore",
-    "ipc.py":             "support"
+    "myharfbuzz.py":      "support",
+    "uharfbuzz":          "ignore",
+    "__init__.py":        "ignore"
   }
 }
 
