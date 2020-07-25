@@ -10,6 +10,13 @@
 
 Text processing routines for [InterShop](https://github.com/loveencounterflow/intershop).
 
+<!--
+
+```sh
+python3.6 -c "import uharfbuzz as d; print( d.__path__[ 0 ] )"
+```
+
+ -->
 
 # To Do
 
