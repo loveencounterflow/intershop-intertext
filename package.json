@@ -4,6 +4,7 @@
   "description": "Text processing routines for InterShop",
   "main": "lib/main.js",
   "scripts": {
+    "postinstall": "node lib/_postinstall.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
