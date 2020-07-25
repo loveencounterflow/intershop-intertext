@@ -1,0 +1,10 @@
+{
+  "intershop-package-version": "1.0.0",
+  "files": {
+    "ipc.sql":            "rebuild",
+    "lib/main.js":        "app",
+    "src/main.coffee":    "ignore",
+    "ipc.py":             "support"
+  }
+}
+
