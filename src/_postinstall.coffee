@@ -44,13 +44,9 @@ get_path_to_python_site_packages = ->
   return R
 
 #-----------------------------------------------------------------------------------------------------------
-get_symlink_path = ->
-  return PATH.join __dirname, '../intershop_modules/uharfbuzz'
-
-#-----------------------------------------------------------------------------------------------------------
 create_symlink = ( path_source, path_target ) ->
   path_source_rel = PATH.relative process.cwd(), path_source
-  whisper "^77762-6^ trying to create symlink at #{path_source_rel} to Python site-packages"
+  whisper "^77762-6^ trying to create symlink at #{path_source_rel} to #{path_target}"
   try
     FS.symlinkSync path_target, path_source
   catch error
@@ -60,14 +56,29 @@ create_symlink = ( path_source, path_target ) ->
     help "^77762-8^ created symlink #{rpr path_source_rel} -> #{path_target}"
   return null
 
+#-----------------------------------------------------------------------------------------------------------
+symlink_uharfbuzz = ->
+  path_to_symlink = PATH.resolve PATH.join __dirname, '../intershop_modules/uharfbuzz'
+  path_to_python  = get_path_to_python_site_packages()
+  create_symlink path_to_symlink, path_to_python
+  return null
+
+#-----------------------------------------------------------------------------------------------------------
+symlink_db_test_trm = ->
+  path_to_symlink = PATH.resolve PATH.join __dirname, '../db/tests/_trm.sql'
+  path_to_trm     = PATH.resolve PATH.join __dirname, '../db/_trm.sql'
+  # debug '^33367^', { __dirname, }
+  # debug '^33367^', { path_to_symlink, }
+  # debug '^33367^', { path_to_trm, }
+  create_symlink path_to_symlink, path_to_trm
+  return null
+
 
 ############################################################################################################
 if module is require.main then do =>
   whisper "^77762-9^ running postinstall script for intershop-intertext"
-  path_to_symlink = get_symlink_path()
-  path_to_python  = get_path_to_python_site_packages()
-  create_symlink path_to_symlink, path_to_python
-
+  symlink_uharfbuzz()
+  symlink_db_test_trm()
 
 
 
