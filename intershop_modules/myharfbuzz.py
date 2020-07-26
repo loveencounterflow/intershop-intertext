@@ -5,7 +5,7 @@
 # import getpass
 # import os
 # import json       as _JSON
-import uharfbuzz  as HB
+# import uharfbuzz  as HB ### NOTE import after ctx available ###
 
 #-----------------------------------------------------------------------------------------------------------
 def _get_cache( ctx ):
@@ -17,6 +17,7 @@ def _get_cache( ctx ):
 
 #-----------------------------------------------------------------------------------------------------------
 def get_mhbfont( ctx, path ):
+  import uharfbuzz  as HB ### NOTE import after ctx available ###
   cache = _get_cache( ctx )
   R     = cache.fonts.get( path, None )
   if R != None:
@@ -37,6 +38,7 @@ def get_mhbfont( ctx, path ):
 
 #-----------------------------------------------------------------------------------------------------------
 def metrics_from_text( ctx, font_path, text ):
+  import uharfbuzz  as HB ### NOTE import after ctx available ###
   mhbfont       = get_mhbfont( ctx, font_path )
   bfr           = HB.Buffer()
   bfr.add_str( text )
