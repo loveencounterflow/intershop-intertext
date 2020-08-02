@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/loveencounterflow/intershop-intertext#readme",
   "dependencies": {
-    "cnd": "^9.1.0"
+    "cnd": "^9.1.0",
+    "svgttf": "^1.0.1"
   }
 }
