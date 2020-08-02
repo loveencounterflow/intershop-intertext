@@ -39,7 +39,8 @@ set role dba;
 create function HARFBUZZ.metrics_from_text_as_rows( _font_path text, _text text )
   returns setof HARFBUZZ.hrfb_glyphadvance strict immutable language plpython3u as $$
   plpy.execute( 'select U.py_init()' ); ctx = GD[ 'ctx' ]
-  import myharfbuzz as MHB
+  # import myharfbuzz as MHB
+  MHB = ctx.addons[ 'intershop-intertext/myharfbuzz.py' ]
   nr = 0
   for part in MHB.metrics_from_text( ctx, _font_path, _text ).parts:
     nr += +1
@@ -53,7 +54,8 @@ set role dba;
 create function HARFBUZZ.metrics_from_text_as_jsonb( _font_path text, _text text )
   returns jsonb strict immutable language plpython3u as $$
   plpy.execute( 'select U.py_init()' ); ctx = GD[ 'ctx' ]
-  import myharfbuzz as MHB
+  # import myharfbuzz as MHB
+  MHB = ctx.addons[ 'intershop-intertext/myharfbuzz.py' ]
   import json as JSON
   return JSON.dumps( MHB.metrics_from_text( ctx, _font_path, _text ) )
   $$;
