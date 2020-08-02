@@ -13,10 +13,14 @@
 
 -- ---------------------------------------------------------------------------------------------------------
 \echo :signal ———{ :filename 1 }———:reset
-drop schema if exists INTERTEXT       cascade; create schema INTERTEXT;
-drop schema if exists INTERTEXT_HYPH  cascade; create schema INTERTEXT_HYPH;
-drop schema if exists INTERTEXT_SLABS cascade; create schema INTERTEXT_SLABS;
+drop schema if exists INTERTEXT         cascade; create schema INTERTEXT;
+drop schema if exists INTERTEXT_HYPH    cascade; create schema INTERTEXT_HYPH;
+drop schema if exists INTERTEXT_SLABS   cascade; create schema INTERTEXT_SLABS;
+drop schema if exists INTERTEXT_SVGTTF  cascade; create schema INTERTEXT_SVGTTF;
 
+
+-- =========================================================================================================
+-- TOP LEVEL
 -- ---------------------------------------------------------------------------------------------------------
 \echo :signal ———{ :filename 2 }———:reset
 -- thx to https://stackoverflow.com/a/31757242/7568091
@@ -24,6 +28,9 @@ create function INTERTEXT.as_text( jsonb )
   returns text strict immutable parallel safe language sql as $$
   select $1#>>'{}'; $$;
 
+
+-- =========================================================================================================
+-- HYPHENATION
 -- ---------------------------------------------------------------------------------------------------------
 \echo :signal ———{ :filename 3 }———:reset
 create function INTERTEXT_HYPH.hyphenate( ¶text text )
@@ -42,6 +49,9 @@ create function INTERTEXT_HYPH.reveal_hyphenate( ¶text text )
   returns text strict immutable language sql as $$
   select INTERTEXT_HYPH.reveal_hyphens( INTERTEXT_HYPH.hyphenate( ¶text ) ); $$;
 
+
+-- =========================================================================================================
+-- SLABS
 -- ---------------------------------------------------------------------------------------------------------
 \echo :signal ———{ :filename 6 }———:reset
 create function INTERTEXT_SLABS.slabjoints_from_text( ¶text text )
@@ -124,6 +134,15 @@ create function INTERTEXT_SLABS.shyphenate( ¶text text )
 
 -- -- ---------------------------------------------------------------------------------------------------------
 -- \echo :signal ———{ :filename 12 }———:reset
+
+
+-- =========================================================================================================
+-- SLABS
+-- ---------------------------------------------------------------------------------------------------------
+\echo :signal ———{ :filename 6 }———:reset
+create function INTERTEXT_SVGTTF.get_svg_pathdata( ¶fontpath text, ¶first_gid integer, ¶last_gid integer )
+  returns jsonb strict immutable language sql as $$
+  select IPC.rpc( '^slabjoints_from_text', to_jsonb( ¶text ) ); $$;
 
 
 /* ###################################################################################################### */
