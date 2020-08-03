@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "",
+  "sourceRoot": "",
+  "sources": [
+    "../src/rpc.coffee"
+  ],
+  "names": [],
+  "mappings": "AACA;EAAA,aAAA;;EAGA,IAAC,CAAA,YAAD,GAAgB,QAAA,CAAA,GAAE,CAAF,CAAA;WAAY;EAAZ;AAHhB",
+  "sourcesContent": [
+    "\n'use strict'\n\n#-----------------------------------------------------------------------------------------------------------\n@get_fortytwo = ( P... ) -> 42\n\n\n\n"
+  ]
+}
