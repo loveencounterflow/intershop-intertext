@@ -6,6 +6,8 @@
     "db/100-harfbuzz.sql":                  "rebuild",
     "lib/main.js":                          "app",
     "src/main.coffee":                      "ignore",
+    "lib/rpc.js":                           "rpc",
+    "src/main.coffee":                      "ignore",
     "intershop_modules/myharfbuzz.py":      "support"
   }
 }
