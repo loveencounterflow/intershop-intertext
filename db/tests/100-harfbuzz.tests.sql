@@ -84,13 +84,28 @@ create view HARFBUZZ_X.slabwidths_rows as ( select
 \echo :signal ———{ :filename 5 }———:reset
 -- select * from HARFBUZZ_X.slabjoints_01_probes order by vnr;
 -- select * from HARFBUZZ_X.slabwidths_jsonb;
-select * from HARFBUZZ_X.slabwidths_rows;
 -- select * from HARFBUZZ.get_detailed_metrics( u&'abc' );
 -- -- select * from HARFBUZZ.get_detailed_metrics( u&'布列塔尼语' );
 -- select * from HARFBUZZ.get_detailed_metrics( u&'布列塔尼语（Brezhoneg，法文叫Breton）。' );
 
+-- select * from HARFBUZZ_X.slabwidths_rows;
+select INTERTEXT_SVGTTF.get_fortytwo();
 
+-- ---------------------------------------------------------------------------------------------------------
+\echo :signal ———{ :filename 4 }———:reset
+create view HARFBUZZ_X.outlines as ( select
+    r12.font_path   as font_path,
+    r1.gid          as gid,
+    r3.pathdata     as pathdata
+  from generate_series( 30, 35 )                      as r1 ( gid ),
+  -- lateral ( select '/home/flow/jzr/hengist/assets/jizura-fonts/FandolKai-Regular.otf' as font_path ) as r12,
+  -- lateral ( select '/home/flow/jzr/hengist/assets/jizura-fonts/lmroman10-italic.otf'  as font_path ) as r12,
+  lateral ( select '/home/flow/jzr/hengist/assets/jizura-fonts/HanaMinA.otf'          as font_path ) as r12,
+  -- lateral INTERTEXT_SVGTTF.pathdata_from_glyphidx( r12.font_path, r1.gid )  as r3 ( pathdata )
+  lateral INTERTEXT_SVGTTF.pathelement_from_glyphidx( r12.font_path, r1.gid )  as r3 ( pathdata )
+    );
 
+select * from HARFBUZZ_X.outlines;
 
 
 /* ###################################################################################################### */
