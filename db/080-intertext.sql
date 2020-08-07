@@ -140,23 +140,42 @@ create function INTERTEXT_SLABS.shyphenate( ¶text text )
 -- OUTLINES
 -- ---------------------------------------------------------------------------------------------------------
 \echo :signal ———{ :filename 6 }———:reset
+create type INTERTEXT_SVGTTF.pathdataplus as (
+  glyphname text,
+  pathdata  text );
+
+-- ---------------------------------------------------------------------------------------------------------
+\echo :signal ———{ :filename 6 }———:reset
 -- create function INTERTEXT_SVGTTF.get_svg_pathdata( ¶fontpath text, ¶first_gid integer, ¶last_gid integer )
 create function INTERTEXT_SVGTTF.get_fortytwo( ¶factor float default 1 )
   returns integer strict immutable language sql as $$
   -- ### TAINT `x::integer` may cause `ERROR:  cannot cast jsonb null to type integer` ###
-  select IPC.rpc( '^intershop-intertext/get_fortytwo', jsonb_build_array( ¶factor ) )::integer; $$;
+  select IPC.rpc( '^intershop-intertext/get_fortytwo',
+    jsonb_build_array( ¶factor ) )::integer; $$;
 
 -- ---------------------------------------------------------------------------------------------------------
 \echo :signal ———{ :filename 6 }———:reset
 create function INTERTEXT_SVGTTF.pathdata_from_glyphidx( ¶fontpath text, ¶gid integer )
   returns text strict immutable language sql as $$
-  select IPC.rpc( '^intershop-intertext/pathdata_from_glyphidx', jsonb_build_array( ¶fontpath, ¶gid ) )#>>'{}'; $$;
+  select IPC.rpc( '^intershop-intertext/pathdata_from_glyphidx',
+    jsonb_build_array( ¶fontpath, ¶gid ) )#>>'{}'; $$;
+
+-- ---------------------------------------------------------------------------------------------------------
+\echo :signal ———{ :filename 6 }———:reset
+create function INTERTEXT_SVGTTF.pathdataplus_from_glyphidx( ¶fontpath text, ¶gid integer )
+  returns INTERTEXT_SVGTTF.pathdataplus strict immutable language sql as $$
+  select
+      r1->>'pathdata'   as pathdata,
+      r1->>'glyphname'  as glyphname
+    from IPC.rpc( '^intershop-intertext/pathdataplus_from_glyphidx',
+    jsonb_build_array( ¶fontpath, ¶gid ) ) as r1; $$;
 
 -- ---------------------------------------------------------------------------------------------------------
 \echo :signal ———{ :filename 6 }———:reset
 create function INTERTEXT_SVGTTF.pathelement_from_glyphidx( ¶fontpath text, ¶gid integer )
   returns text strict immutable language sql as $$
-  select IPC.rpc( '^intershop-intertext/pathelement_from_glyphidx', jsonb_build_array( ¶fontpath, ¶gid ) )#>>'{}'; $$;
+  select IPC.rpc( '^intershop-intertext/pathelement_from_glyphidx',
+    jsonb_build_array( ¶fontpath, ¶gid ) )#>>'{}'; $$;
 
 
 

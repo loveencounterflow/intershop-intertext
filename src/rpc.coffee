@@ -51,6 +51,12 @@ font_from_path = ( path ) ->
   transform = null
   return SVGTTF.pathelement_from_glyphidx ( font_from_path fontpath ), glyphidx, size, transform
 
+#-----------------------------------------------------------------------------------------------------------
+@pathdataplus_from_glyphidx = ( fontpath, glyphidx ) ->
+  size      = 1000
+  transform = null
+  return SVGTTF.pathdataplus_from_glyphidx ( font_from_path fontpath ), glyphidx, size, transform
+
 
 
 
