@@ -37,7 +37,7 @@ font_from_path = ( path ) ->
 #-----------------------------------------------------------------------------------------------------------
 @get_fortytwo = ( P... ) ->
   debug '^intershop-intertext/get_fortytwo@44556^', { P, }
-  return 42
+  return P.reduce ( ( acc, x ) -> acc + x ), 42
 
 #-----------------------------------------------------------------------------------------------------------
 @pathdata_from_glyphidx = ( fontpath, glyphidx ) ->

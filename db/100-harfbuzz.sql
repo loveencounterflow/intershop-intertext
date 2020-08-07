@@ -30,6 +30,7 @@ create table HARFBUZZ.x (
 \echo :signal ———{ :filename 3 }———:reset
 create type HARFBUZZ.hrfb_glyphadvance as (
     vnr         VNR.vnr,
+    fid         text,
     gid         integer,
     dx          float );
 
@@ -41,10 +42,10 @@ create function HARFBUZZ.metrics_from_text_as_rows( _font_path text, _text text 
   plpy.execute( 'select U.py_init()' ); ctx = GD[ 'ctx' ]
   # import myharfbuzz as MHB
   MHB = ctx.addons[ 'intershop-intertext/myharfbuzz.py' ]
-  nr = 0
+  nr  = 0
   for part in MHB.metrics_from_text( ctx, _font_path, _text ).parts:
     nr += +1
-    yield { 'vnr': [ nr, ], 'gid': part.gid, 'dx': part.dx, }
+    yield { 'vnr': [ nr, ], 'fid': part.fid, 'gid': part.gid, 'dx': part.dx, }
   $$;
 reset role;
 
