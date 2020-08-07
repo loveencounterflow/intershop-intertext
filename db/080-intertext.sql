@@ -158,8 +158,6 @@ create function INTERTEXT_SVGTTF.pathelement_from_glyphidx( ¶fontpath text, ¶g
   returns text strict immutable language sql as $$
   select IPC.rpc( '^intershop-intertext/pathelement_from_glyphidx', jsonb_build_array( ¶fontpath, ¶gid ) )#>>'{}'; $$;
 
-  -- ### NOTE consider to shorten calls to the below, assuming RPC registry knows return value type: ###
-  -- select rpc( 'intershop-intertext/pathelement_from_glyphidx', ¶fontpath, ¶gid )
 
 
 /* ###################################################################################################### */

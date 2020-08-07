@@ -46,9 +46,6 @@ font_from_path = ( path ) ->
   return SVGTTF.pathdata_from_glyphidx ( font_from_path fontpath ), glyphidx
 
 #-----------------------------------------------------------------------------------------------------------
-### NOT consider to wrap RPC methods so registry knows how to cast return values:
-@pathelement_from_glyphidx = returns 'text', ( fontpath, glyphidx ) ->
-###
 @pathelement_from_glyphidx = ( fontpath, glyphidx ) ->
   size      = 1000
   transform = null
