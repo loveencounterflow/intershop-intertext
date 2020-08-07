@@ -1,6 +1,6 @@
 {
   "name": "intershop-intertext",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "description": "Text processing routines for InterShop",
   "main": "lib/main.js",
   "scripts": {
