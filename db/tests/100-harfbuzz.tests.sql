@@ -99,8 +99,8 @@ create view HARFBUZZ_X.outlines as ( select
     r3.pathdata     as pathdata
   from generate_series( 30, 35 )                      as r1 ( gid ),
   -- lateral ( select '/home/flow/jzr/hengist/assets/jizura-fonts/FandolKai-Regular.otf' as font_path ) as r12,
-  -- lateral ( select '/home/flow/jzr/hengist/assets/jizura-fonts/lmroman10-italic.otf'  as font_path ) as r12,
-  lateral ( select '/home/flow/jzr/hengist/assets/jizura-fonts/HanaMinA.otf'          as font_path ) as r12,
+  lateral ( select '/home/flow/jzr/hengist/assets/jizura-fonts/lmroman10-italic.otf'  as font_path ) as r12,
+  -- lateral ( select '/home/flow/jzr/hengist/assets/jizura-fonts/HanaMinA.otf'          as font_path ) as r12,
   -- lateral INTERTEXT_SVGTTF.pathdata_from_glyphidx( r12.font_path, r1.gid )  as r3 ( pathdata )
   lateral INTERTEXT_SVGTTF.pathelement_from_glyphidx( r12.font_path, r1.gid )  as r3 ( pathdata )
     );
