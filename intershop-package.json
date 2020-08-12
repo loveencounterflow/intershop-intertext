@@ -4,6 +4,7 @@
     "db/000-first.sql":                     "rebuild",
     "db/080-intertext.sql":                 "rebuild",
     "db/100-harfbuzz.sql":                  "rebuild",
+    "db/900-dev.sql":                       "rebuild",
     "lib/main.js":                          "app",
     "src/main.coffee":                      "ignore",
     "lib/rpc.js":                           "rpc",
