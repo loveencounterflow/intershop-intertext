@@ -2,6 +2,7 @@
   "intershop-package-version": "1.0.0",
   "files": {
     "db/000-first.sql":                     "rebuild",
+    "db/070-xml.sql":                       "rebuild",
     "db/080-intertext.sql":                 "rebuild",
     "db/100-harfbuzz.sql":                  "rebuild",
     "db/900-dev.sql":                       "rebuild",
