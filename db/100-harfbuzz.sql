@@ -38,12 +38,14 @@ create type HARFBUZZ.hrfb_glyphadvance as (
 \echo :signal ———{ :filename 4 }———:reset
 set role dba;
 create function HARFBUZZ.metrics_from_text_as_rows( _font_path text, _text text )
-  returns setof HARFBUZZ.hrfb_glyphadvance strict immutable language plpython3u as $$
+  returns setof HARFBUZZ.hrfb_glyphadvance immutable strict language plpython3u as $$
   plpy.execute( 'select U.py_init()' ); ctx = GD[ 'ctx' ]
   # import myharfbuzz as MHB
   MHB = ctx.addons[ 'intershop-intertext/myharfbuzz.py' ]
   nr  = 0
+  ctx.log( '^33467^', _text )
   for part in MHB.metrics_from_text( ctx, _font_path, _text ).parts:
+    ctx.log( '^33467^', part )
     nr += +1
     yield { 'vnr': [ nr, ], 'fid': part.fid, 'gid': part.gid, 'dx': part.dx, }
   $$;

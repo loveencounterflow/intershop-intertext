@@ -39,8 +39,8 @@ create function XML.escape_attribute_value( text ) returns text strict immutable
    R text;
   begin
     R := XML.escape_text( $1 );
-    R := regexp_replace( R, '''', '&#39;', 'g' );
-    R := regexp_replace( R, '\n', '&#10;', 'g' );
+    R := regexp_replace( R,  '''', '&#39;', 'g' );
+    R := regexp_replace( R, e'\n', '&#10;', 'g' );
     R := '''' || R || '''';
     return R; end; $$;
 

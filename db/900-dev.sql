@@ -11,7 +11,7 @@
 -- ---------------------------------------------------------------------------------------------------------
 -- \set filename interplot/db/tests/080-intertext.sql
 \set filename interplot/db/900-dev.sql
-\set signal :red
+\set signal :blue
 
 -- ---------------------------------------------------------------------------------------------------------
 \echo :signal ———{ :filename 1 }———:reset
@@ -35,128 +35,125 @@ insert into HARFBUZZ_X.fonts_and_paths ( fid, fontnick, path ) values
 
 -- ---------------------------------------------------------------------------------------------------------
 \echo :signal ———{ :filename 3 }———:reset
-create view HARFBUZZ_X.slabwidths_01 as ( select
-    r1.vnr    as vnr,
-    r1.slab   as slab,
-    r1.joint  as joint
-  from INTERTEXT_SLABS.shyphenate( 'supercoherent amazingly eloquent fi'::text ) as r1
+create table HARFBUZZ_X.slabwidths_01 as ( select
+    r2.vnr    as vnr,
+    r2.slab   as slab,
+    r2.joint  as joint
+  -- from 'supercoherent amazingly eloquent fi'::text as r1 ( line ),
+  -- from ( select 'one two three'::text ) as r1 ( line ),
+  from ( select 'Ulysses Atlantis Primordial'::text ) as r1 ( line ),
+  lateral INTERTEXT_SLABS.shyphenate( r1.line ) as r2
   order by vnr
   -- , lateral ( select 42 ) as d2 ( x )
   );
 
--- insert into HARFBUZZ_X.slabwidths_01 ( vnr, slab, joint ) values
---   ( '{1,1}', 'amazingly', '°' ),
---   ( '{3,1}', 'eloquent', '°' );
+-- ---------------------------------------------------------------------------------------------------------
+\echo :signal ———{ :filename 3 }———:reset
+/* insert pseudo-slabs with joint `+` to represent slabs separated by spaces: */
+insert into HARFBUZZ_X.slabwidths_01 ( select
+    VNR.cat( r1.vnr, VNR.greatest() ) as vnr,
+    null                              as slab,
+    '+'                               as joint
+  from HARFBUZZ_X.slabwidths_01 as r1
+  where r1.joint = '°' );
 
 -- ---------------------------------------------------------------------------------------------------------
-\echo :signal ———{ :filename 4 }———:reset
-create view HARFBUZZ_X.slabwidths_jsonb as ( select
-    r1.vnr        as vnr,
-    r1.slab       as slab,
-    r1.joint      as joint,
-    r3.width      as width
-  from HARFBUZZ_X.slabwidths_01                      as r1,
-  -- lateral ( select '/home/flow/jzr/hengist/assets/jizura-fonts/FandolKai-Regular.otf' as font_path ) as r12,
-  lateral ( select '/home/flow/jzr/hengist/assets/jizura-fonts/lmroman10-italic.otf' as font_path ) as r12,
-  lateral HARFBUZZ.metrics_from_text_as_jsonb( r12.font_path, r1.slab )  as r3 ( width )
-  -- lateral to_char( d2.width, '99,990.000' )                 as r3 ( width )
-  order by vnr );
+\echo :signal ———{ :filename 3 }———:reset
+/* insert pseudo-slab with joint `T` to represent the (width of) the slug: */
+insert into HARFBUZZ_X.slabwidths_01 ( vnr, slab, joint ) values ( VNR.greatest(), null, 'T' );
 
 -- ---------------------------------------------------------------------------------------------------------
 \echo :signal ———{ :filename 5 }———:reset
-create view HARFBUZZ_X.slabwidths_02 as ( select
+/* create table with all slabs resolved into segments with typographical metrics; this will omit all
+  pseudo-segments where `slab` is `null` b/c we're calling a `strict` function: */
+create table HARFBUZZ_X.slabwidths_02 as ( select
     r4.vnr                                as vnr,
     r1.slab                               as slab,
     r1.joint                              as joint,
     r3.fid                                as fid,
     r3.gid                                as gid,
     r3.dx                                 as width,
-    coalesce( lag( r3.dx ) over w1, 0 )   as next_dx
+    null::float                           as x
   from HARFBUZZ_X.slabwidths_01                                                                     as r1,
   -- lateral ( select '/home/flow/jzr/hengist/assets/jizura-fonts/FandolKai-Regular.otf' as font_path ) as r12,
   lateral ( select '/home/flow/jzr/hengist/assets/jizura-fonts/lmroman10-italic.otf' as font_path ) as r12,
   lateral HARFBUZZ.metrics_from_text_as_rows( r12.font_path, r1.slab )                              as r3,
   lateral VNR.cat( r1.vnr, r3.vnr )                                                                 as r4 ( vnr )
-  window w1 as ( order by r4.vnr rows between unbounded preceding and current row )
   order by vnr );
 
 -- ---------------------------------------------------------------------------------------------------------
 \echo :signal ———{ :filename 6 }———:reset
-create view HARFBUZZ_X.slabwidths_03 as (
-  ( select * from HARFBUZZ_X.slabwidths_02 ) union all
-  ( select
-      VNR.greatest()  as vnr,
-      null            as slab,
-      null            as joint,
-      null            as fid,
-      null            as gid,
-      null            as width,
-      r1.width        as next_dx
-    from HARFBUZZ_X.slabwidths_02 as r1
-    order by vnr desc limit 1 ) );
-
-comment on view HARFBUZZ_X.slabwidths_03 is 'Same as HARFBUZZ_X.slabwidths_02 but with one row added to take
-up the width of the last glyph to be typeset, so the last instance of the running sum in
-HARFBUZZ_X.slabwidths_04.x can represent the width of the entire line of type.';
-
--- ---------------------------------------------------------------------------------------------------------
-\echo :signal ———{ :filename 7 }———:reset
-create view HARFBUZZ_X.slabwidths_04 as ( select
-    r1.vnr          as vnr,
-    r1.slab         as slab,
-    r1.joint        as joint,
-    r1.fid          as fid,
-    r1.gid          as gid,
-    r1.width        as width,
-    r1.next_dx      as next_dx,
-    sum( r1.next_dx ) over w1                  as x
-  from HARFBUZZ_X.slabwidths_03 as r1
-  window w1 as ( order by r1.vnr rows between unbounded preceding and current row )
-  order by vnr );
-
-comment on view HARFBUZZ_X.slabwidths_04 is 'Same as HARFBUZZ_X.slabwidths_03 but with a running sum of the
-widths of the glyphs; the sum in the line with the VNR `{infinity}` represents the width of the entire line
-of type.';
-
--- ---------------------------------------------------------------------------------------------------------
-\echo :signal ———{ :filename 8 }———:reset
--- ### TAINT use Postgres XML datatype, functions ###
-create function HARFBUZZ_X._svg_use_symbol( ¶x float, ¶fid text, ¶gid integer )
-  returns text strict immutable language sql as $$
-    select format( '<use x=''%s'' y=''0'' href="f/%s#g%s"/>', ¶x, ¶fid, ¶gid ); $$;
+/* Supply missing widths for pseudo-segments representing spaces (with assumed arbitrary widths) and the entry
+  representing the slug (with width `null`):*/
+insert into HARFBUZZ_X.slabwidths_02 ( select
+    r1.vnr                                          as vnr,
+    r1.slab                                         as slab,
+    r1.joint                                        as joint,
+    null                                            as fid,
+    null                                            as gid,
+    case r1.joint when '+' then 250 else null end   as width,
+    null                                            as x
+  from HARFBUZZ_X.slabwidths_01 as r1 where r1.joint in ( '+', 'T' ) );
 
 -- ---------------------------------------------------------------------------------------------------------
 \echo :signal ———{ :filename 9 }———:reset
--- ### TAINT use Postgres XML datatype, functions ###
+/* Supply current `x` position for each element which computes as the cumulative widths for each glyf,
+  excluding the current one: */
+update HARFBUZZ_X.slabwidths_02 as ro set x = coalesce( ri.cumulative_width, 0 ) from ( select
+    vnr,
+    sum( width ) over w as cumulative_width
+  from HARFBUZZ_X.slabwidths_02
+  window w as ( order by vnr
+    range between unbounded preceding and current row
+    exclude current row ) ) as ri
+  where ro.vnr = ri.vnr;
+
+-- ---------------------------------------------------------------------------------------------------------
+\echo :signal ———{ :filename 13 }———:reset
+-- ### TAINT use XML schema methods ###
+create function HARFBUZZ_X._svg_document_opener( ¶minx float, ¶miny float, ¶width float, ¶height float )
+  returns text strict immutable language sql as $$
+  select format(
+    '<?xml version=''1.0'' standalone=''no''?>' ||
+    '<svg xmlns=''http://www.w3.org/2000/svg'' viewBox=''%s %s %s %s''>', ¶minx, ¶miny, ¶width, ¶height ); $$;
+
+-- ---------------------------------------------------------------------------------------------------------
+\echo :signal ———{ :filename 14 }———:reset
+-- ### TAINT use XML schema methods ###
+create function HARFBUZZ_X._svg_use_symbol( ¶x float, ¶fid text, ¶gid integer )
+  returns text strict immutable language sql as $$
+  select format( '<use x=''%s'' y=''0'' href="/v2/font?fid=%s#g%s"/>', ¶x, ¶fid, ¶gid ); $$;
+
+-- ---------------------------------------------------------------------------------------------------------
+\echo :signal ———{ :filename 15 }———:reset
+-- ### TAINT use XML schema methods ###
 -- ### NOTE should allow subsetting ###
 create function HARFBUZZ_X._svg_def_symbol( ¶fid text, ¶gid float, ¶glyphname text, ¶pathdata text )
   returns text strict immutable language sql as $$
-    select format(
-      '<!-- %s --><symbol id=''g%s'' viewBox=''0,0,1000,1000''><path d=''%s''/></symbol>',
-      ¶glyphname,
-      ¶gid,
-      -- ¶fid,
-      ¶pathdata ); $$;
+  select format(
+    '<!-- %s --><symbol id=''g%s'' width=''1000'' height=''1800'' viewBox=''0,-800,1000,1000''><path d=''%s''/></symbol>',
+    ¶glyphname,
+    ¶gid,
+    -- ¶fid,
+    ¶pathdata ); $$;
 
 -- ---------------------------------------------------------------------------------------------------------
-\echo :signal ———{ :filename 10 }———:reset
-create view HARFBUZZ_X.slabwidths_05 as ( select
+\echo :signal ———{ :filename 16 }———:reset
+create view HARFBUZZ_X.slabwidths_03 as ( select
     r1.vnr          as vnr,
     r1.slab         as slab,
     r1.joint        as joint,
     r1.fid          as fid,
     r1.gid          as gid,
     r1.width        as width,
-    r1.next_dx      as next_dx,
     r1.x            as x,
     r2.svglyphref   as svglyphref
-  from HARFBUZZ_X.slabwidths_04                               as r1,
+  from HARFBUZZ_X.slabwidths_02                               as r1,
   lateral HARFBUZZ_X._svg_use_symbol( r1.x, r1.fid, r1.gid )  as r2 ( svglyphref )
-  where r1.gid is not null
   order by vnr );
 
 -- ---------------------------------------------------------------------------------------------------------
-\echo :signal ———{ :filename 11 }———:reset
+\echo :signal ———{ :filename 17 }———:reset
 create view HARFBUZZ_X.svglyphdefs as ( select
     r2.fid          as fid,
     r1.gid          as gid,
@@ -165,7 +162,7 @@ create view HARFBUZZ_X.svglyphdefs as ( select
     -- r3.pathdata     as pathdata
     -- r2.path         as fontpath
   from
-    generate_series( 10, 20 )                                                      as r1 ( gid ),
+    generate_series( 0, 123 )                                                       as r1 ( gid ),
     -- generate_series( 0, 1024 )                                                      as r1 ( gid ),
     HARFBUZZ_X.fonts_and_paths                                                      as r2,
     lateral INTERTEXT_SVGTTF.pathdataplus_from_glyphidx( r2.path, r1.gid )          as r3 ( pathdata, glyphname ),
@@ -177,7 +174,7 @@ create view HARFBUZZ_X.svglyphdefs as ( select
     );
 
 -- ---------------------------------------------------------------------------------------------------------
-\echo :signal ———{ :filename 12 }———:reset
+\echo :signal ———{ :filename 18 }———:reset
 -- ### NOTE should allow subsetting ###
 create function HARFBUZZ_X.get_svg_font_lines( ¶fid text )
   returns setof text strict immutable language plpgsql as $$
@@ -197,10 +194,9 @@ create function HARFBUZZ_X.get_svg_font_lines( ¶fid text )
       else
         return next substring( ¶template_row.line from 1 for ¶nr - 1 );
         -- ### NOTE observe crazy syntax here, `"text"` is an SQL identifier, `name text` gives `<text ...>` ###
-        return next xmlelement(
-          name "text",
-          xmlattributes( 100 as x, 100 as y ),
-          'SVG symbol font for' || ¶fontnick || '.' )::text || '\n';
+        return next XML.tag( '{"$key":"<tag","name":"text","atrs":{"x":30,"y":30}}' );
+        return next XML.escape_text( 'SVG symbol font for ' || ¶fontnick );
+        return next XML.tag( '{"$key":">tag","name":"text"}' );
         -- ### TAINT use function call instead of select ###
         for ¶svg_row in ( select * from HARFBUZZ_X.svglyphdefs order by gid ) loop
           return next ¶svg_row.svglyphdef;
@@ -211,7 +207,42 @@ create function HARFBUZZ_X.get_svg_font_lines( ¶fid text )
     end; $$;
 
 -- ---------------------------------------------------------------------------------------------------------
-\echo :signal ———{ :filename 13 }———:reset
+\echo :signal ———{ :filename 19 }———:reset
+-- ### NOTE should allow subsetting ###
+create function HARFBUZZ_X.linotype_preview( ¶fid text, ¶text text )
+  returns setof text strict immutable language plpgsql as $$
+  declare
+    ¶width  float := 0;
+    ¶height float := 0;
+    ¶row    record;
+  begin
+    ¶width  := ( select x from HARFBUZZ_X.slabwidths_03 where vnr = array[ 'infinity'::float ] );
+    -- ### TAINT base ¶height on font properties
+    ¶height := 1200;
+    return next HARFBUZZ_X._svg_document_opener( 0, 0, ¶width, ¶height );
+    for ¶row in ( select * from HARFBUZZ_X.slabwidths_03 ) loop
+      return next ¶row.svglyphref;
+      end loop;
+    return next '</svg>';
+    --   ¶nr := position( ¶marker in ¶template_row.line );
+    --   if ¶nr = 0 then
+    --     return next ¶template_row.line;
+    --   else
+    --     return next substring( ¶template_row.line from 1 for ¶nr - 1 );
+    --     -- ### NOTE observe crazy syntax here, `"text"` is an SQL identifier, `name text` gives `<text ...>` ###
+    --     return next XML.tag( '{"$key":"<tag","name":"text","atrs":{"x":30,"y":30}}' );
+    --     return next XML.escape_text( 'SVG symbol font for' || ¶fontnick || '.' );
+    --     return next XML.tag( '{"$key":">tag","name":"text"}' );
+    --     -- ### TAINT use function call instead of select ###
+    --     for ¶svg_row in ( select * from HARFBUZZ_X.svglyphdefs order by gid ) loop
+    --       return next ¶svg_row.svglyphdef;
+    --       end loop;
+    --     return next substring( ¶template_row.line from ¶nr + ¶marker_length );
+    --     end if;
+    end; $$;
+
+-- ---------------------------------------------------------------------------------------------------------
+\echo :signal ———{ :filename 20 }———:reset
 create view HARFBUZZ_X.svgfont_01 as ( select
     r1.linenr as linenr,
     r2.line   as line
@@ -223,19 +254,19 @@ create view HARFBUZZ_X.svgfont_01 as ( select
     and ( r2.line != '' )
   order by r1.dsnr, r1.linenr );
 
--- ---------------------------------------------------------------------------------------------------------
-\echo :signal ———{ :filename 14 }———:reset
--- create view HARFBUZZ_X.svgfont_02 as ( select
---     *
---   from HARFBUZZ_X.svgfont_01 as r1,
---   lateral string_agg( )
---   lateral regexp_replace( r1.line, '\$\{symboldefs\}', )
--- )
+-- -- ---------------------------------------------------------------------------------------------------------
+-- \echo :signal ———{ :filename 21 }———:reset
+-- -- create view HARFBUZZ_X.svgfont_02 as ( select
+-- --     *
+-- --   from HARFBUZZ_X.svgfont_01 as r1,
+-- --   lateral string_agg( )
+-- --   lateral regexp_replace( r1.line, '\$\{symboldefs\}', )
+-- -- )
 
 
 
 /* ###################################################################################################### */
-\echo :red ———{ :filename 7 }———:reset
+\echo :red ———{ :filename 22 }———:reset
 \quit
 
 

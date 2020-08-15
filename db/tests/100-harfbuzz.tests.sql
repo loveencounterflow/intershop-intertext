@@ -6,7 +6,7 @@
 \ir '../_trm.sql'
 -- \ir './set-signal-color.sql'
 -- \ir './test-begin.sql'
--- \pset pager on
+\pset pager off
 \timing off
 -- ---------------------------------------------------------------------------------------------------------
 begin transaction;
@@ -32,7 +32,6 @@ drop schema if exists HARFBUZZ_T cascade; create schema HARFBUZZ_T;
 
 /* ###################################################################################################### */
 \echo :signal ———{ :filename 15 }———:reset
-select * from HARFBUZZ_X.slabwidths_01;
 -- select * from HARFBUZZ_X.slabwidths_jsonb;
 -- select * from HARFBUZZ.get_detailed_metrics( u&'abc' );
 -- -- select * from HARFBUZZ.get_detailed_metrics( u&'布列塔尼语' );
@@ -43,15 +42,16 @@ select * from HARFBUZZ_X.slabwidths_01;
 
 -- select * from HARFBUZZ_X.slabwidths_01;
 -- select * from HARFBUZZ_X.slabwidths_jsonb;
--- select * from HARFBUZZ_X.slabwidths_02;
--- select * from HARFBUZZ_X.slabwidths_03;
--- select * from HARFBUZZ_X.slabwidths_04;
--- select * from HARFBUZZ_X.slabwidths_05;
--- select * from HARFBUZZ_X.svglyphdefs;
+-- select * from IPC.rpc( '^shyphenate', to_jsonb( 'one two'::text ) );
+select * from HARFBUZZ_X.slabwidths_01 order by vnr;
+select * from HARFBUZZ_X.slabwidths_02 order by vnr;
+select * from HARFBUZZ_X.slabwidths_03 order by vnr;
+select * from HARFBUZZ_X.svglyphdefs;
+select * from HARFBUZZ_X.linotype_preview( 'f123', 'helo' );
 -- select * from HARFBUZZ_X.fonts_and_paths where fid = 'f123';
 
-select * from HARFBUZZ_X.svgfont_01;
-select * from HARFBUZZ_X.get_svg_font_lines( 'f123' );
+-- select * from HARFBUZZ_X.svgfont_01;
+-- select substring( line from 1 for 100 ) from HARFBUZZ_X.get_svg_font_lines( 'f123' ) as r1 ( line );
 
 
 /* ###################################################################################################### */
