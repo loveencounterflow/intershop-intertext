@@ -25,13 +25,54 @@ drop schema if exists HARFBUZZ_X cascade; create schema HARFBUZZ_X;
 create table HARFBUZZ_X.fonts_and_paths (
     fid       text not null unique primary key,
     fontnick  text not null,
-    path      text not null );
+    fontpath  text not null );
 
-insert into HARFBUZZ_X.fonts_and_paths ( fid, fontnick, path ) values
+insert into HARFBUZZ_X.fonts_and_paths ( fid, fontnick, fontpath ) values
   ( 'f456', 'fandolkai_regular_otf',  '/home/flow/jzr/hengist/assets/jizura-fonts/FandolKai-Regular.otf'  ),
   ( 'f455', 'hanamina_otf',           '/home/flow/jzr/hengist/assets/jizura-fonts/HanaMinA.otf'           ),
   ( 'f123', 'lmroman10_italic_otf',   '/home/flow/jzr/hengist/assets/jizura-fonts/lmroman10-italic.otf'   );
 
+-- ---------------------------------------------------------------------------------------------------------
+\echo :signal ———{ :filename 2 }———:reset
+create table HARFBUZZ_X.fontmetrics (
+    fid       text  not null,
+    key       text  not null,
+    value     float not null,
+    primary key ( fid, key ) );
+
+-- ---------------------------------------------------------------------------------------------------------
+\echo :signal ———{ :filename 6 }———:reset
+create function HARFBUZZ_X.get_fontmetric( ¶fid text, ¶key text )
+  returns float strict volatile language plpgsql as $$
+  declare
+    R           float;
+    ¶row_count  integer;
+    ¶hint       text;
+  begin
+    -- .....................................................................................................
+    R := ( select value from HARFBUZZ_X.fontmetrics where fid = ¶fid and key = ¶key );
+    if R is not null then return R; end if;
+    -- .....................................................................................................
+    insert into HARFBUZZ_X.fontmetrics ( fid, key, value ) ( select
+        r1.fid                          as fid,
+        r2.key                          as key,
+        ( r2.value#>>'{}' )::float      as value
+      from HARFBUZZ_X.fonts_and_paths                                             as r1,
+      lateral jsonb_each( INTERTEXT_SVGTTF.metrics_from_fontpath( r1.fontpath ) ) as r2 ( key, value )
+      where r1.fid = ¶fid );
+    -- .....................................................................................................
+    get diagnostics ¶row_count = row_count;
+    if ¶row_count = 0 then
+      ¶hint := format( 'unable to retrieve font metrics for font with FID %s', ¶fid );
+      raise sqlstate 'HBX01' using message = '#HBX01-1 Value Error', hint = ¶hint;
+      end if;
+    -- .....................................................................................................
+    R := ( select value from HARFBUZZ_X.fontmetrics where fid = ¶fid and key = ¶key );
+    if R is not null then return R; end if;
+    -- .....................................................................................................
+    ¶hint := format( 'font FID %s has no metric named %s', ¶fid, ¶key );
+    raise sqlstate 'HBX02' using message = '#HBX02-1 Key Error', hint = ¶hint;
+    end; $$;
 
 -- ---------------------------------------------------------------------------------------------------------
 \echo :signal ———{ :filename 3 }———:reset
