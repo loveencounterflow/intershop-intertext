@@ -74,10 +74,10 @@ create materialized view INTERTEXT_X.slabjoints_01_probes as
 -- ---------------------------------------------------------------------------------------------------------
 create view INTERTEXT_X.slabjoints_01_matchers as
   ( select null::VNR.vnr as vnr, null::text as slab, null::text as joint where false ) union all
-  ( select '{0}', 'amaz',  '=' ) union all
-  ( select '{1}', 'ingly', '°' ) union all
-  ( select '{2}', 'elo',   '=' ) union all
-  ( select '{3}', 'quent', '#' ) union all
+  ( select '{1}', 'amaz-', '=' ) union all
+  ( select '{2}', 'ingly', '°' ) union all
+  ( select '{3}', 'elo-',  '=' ) union all
+  ( select '{4}', 'quent', '#' ) union all
   ( select null, null, null where false );
 
 -- ---------------------------------------------------------------------------------------------------------
@@ -135,7 +135,6 @@ select
   from INTERTEXT_X.slabjoints_01_probes as d1,
   lateral INTERTEXT.XXX_expand_slabjoints( slab, joint ) as d2 ( x )
   ;
-
 
 
 /* ###################################################################################################### */
