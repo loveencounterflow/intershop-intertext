@@ -43,15 +43,16 @@ drop schema if exists HARFBUZZ_T cascade; create schema HARFBUZZ_T;
 -- select * from HARFBUZZ_X.slabwidths_01;
 -- select * from HARFBUZZ_X.slabwidths_jsonb;
 -- select * from IPC.rpc( '^shyphenate', to_jsonb( 'one two'::text ) );
-select * from HARFBUZZ_X.slabwidths_01 order by vnr;
-select * from HARFBUZZ_X.slabwidths_02 order by vnr;
-select * from HARFBUZZ_X.slabwidths_03 order by vnr;
-select * from HARFBUZZ_X.svglyphdefs;
-select * from HARFBUZZ_X.linotype_preview( 'f123', 'helo' );
--- select * from HARFBUZZ_X.fonts_and_paths where fid = 'f123';
-
 -- select * from HARFBUZZ_X.svgfont_01;
 -- select substring( line from 1 for 100 ) from HARFBUZZ_X.get_svg_font_lines( 'f123' ) as r1 ( line );
+-- select * from HARFBUZZ_X.fonts_and_paths where fid = 'f123';
+
+
+-- select * from HARFBUZZ_X.slabwidths_01 order by vnr;
+-- select * from HARFBUZZ_X.slabwidths_02 order by vnr;
+-- select * from HARFBUZZ_X.slabwidths_03 order by vnr;
+-- select * from HARFBUZZ_X.svglyphdefs;
+-- select * from HARFBUZZ_X.linotype_preview( 'f123', 'helo' );
 
 
 /* ###################################################################################################### */
