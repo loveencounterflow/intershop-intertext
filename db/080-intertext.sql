@@ -182,6 +182,13 @@ create function INTERTEXT_SVGTTF.pathelement_from_glyphidx( ¶fontpath text, ¶g
   select IPC.rpc( '^intershop-intertext/pathelement_from_glyphidx',
     jsonb_build_array( ¶fontpath, ¶gid ) )#>>'{}'; $$;
 
+-- ---------------------------------------------------------------------------------------------------------
+\echo :signal ———{ :filename 19 }———:reset
+create function INTERTEXT_SVGTTF.metrics_from_fontpath( ¶fontpath text )
+  returns jsonb strict immutable language sql as $$
+  select IPC.rpc( '^intershop-intertext/metrics_from_fontpath',
+    jsonb_build_array( ¶fontpath ) ); $$;
+
 
 
 /* ###################################################################################################### */
