@@ -142,6 +142,7 @@ create function INTERTEXT_SLABS.shyphenate( ¶text text )
 \echo :signal ———{ :filename 13 }———:reset
 create type INTERTEXT_SVGTTF.pathdataplus as (
   glyphname text,
+  chr       text,
   pathdata  text );
 
 -- ---------------------------------------------------------------------------------------------------------
@@ -168,8 +169,9 @@ create function INTERTEXT_SVGTTF.pathdata_from_glyphidx( ¶fontpath text, ¶gid 
 create function INTERTEXT_SVGTTF.pathdataplus_from_glyphidx( ¶fontpath text, ¶gid integer )
   returns INTERTEXT_SVGTTF.pathdataplus strict immutable language sql as $$
   select
-      r1->>'pathdata'   as pathdata,
-      r1->>'glyphname'  as glyphname
+      r1->>'glyphname'  as glyphname,
+      r1->>'chr'        as chr,
+      r1->>'pathdata'   as pathdata
     from IPC.rpc( '^intershop-intertext/pathdataplus_from_glyphidx',
     jsonb_build_array( ¶fontpath, ¶gid ) ) as r1; $$;
 
